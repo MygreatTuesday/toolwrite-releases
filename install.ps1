@@ -4,7 +4,10 @@
 #
 # Downloads the newest Toolwrite release for Windows (x86-64), checks its
 # SHA-256 checksum, installs toolwrite.exe into your user folder (no
-# administrator rights needed), and adds that folder to your PATH.
+# administrator rights needed), adds that folder to your PATH, and puts the
+# Toolwrite tree icon on the Desktop and in the Start menu. The icon opens
+# Toolwrite in the "Toolwrite projects" folder of your home folder, ready
+# for a request in your own words.
 #
 # Settings (environment variables, all optional):
 #   TOOLWRITE_VERSION   a release tag such as v0.1.0 (default: the newest)
@@ -13,6 +16,7 @@
 #   TOOLWRITE_BASE_URL  where the release files are (default: the release's
 #                       GitHub download folder); for testing a release
 #   TOOLWRITE_NO_MODIFY_PATH=1   leave PATH as it is
+#   TOOLWRITE_NO_SHORTCUT=1      no Desktop or Start menu icon
 #
 # Keep this file plain ASCII: Windows PowerShell 5.1 misreads other
 # characters in a script saved without a byte-order mark.
@@ -78,6 +82,10 @@
         Expand-Archive $zip -DestinationPath $temp -Force
         New-Item -ItemType Directory -Force $installDir | Out-Null
         Copy-Item (Join-Path $temp "$name\toolwrite.exe") (Join-Path $installDir 'toolwrite.exe') -Force
+        $icon = Join-Path $temp "$name\toolwrite.ico"
+        if (Test-Path $icon) {
+            Copy-Item $icon (Join-Path $installDir 'toolwrite.ico') -Force
+        }
     } finally {
         Remove-Item -Recurse -Force $temp -ErrorAction SilentlyContinue
     }
@@ -96,6 +104,32 @@
 
     $version = & (Join-Path $installDir 'toolwrite.exe') --version
 
+    # The Toolwrite tree icon, on the Desktop and in the Start menu: it opens
+    # Toolwrite in "Toolwrite projects", ready for a request in plain words.
+    $shortcuts = @()
+    if ($env:TOOLWRITE_NO_SHORTCUT -ne '1') {
+        try {
+            $projects = Join-Path $HOME 'Toolwrite projects'
+            New-Item -ItemType Directory -Force $projects | Out-Null
+            $exe = Join-Path $installDir 'toolwrite.exe'
+            $iconFile = Join-Path $installDir 'toolwrite.ico'
+            $shell = New-Object -ComObject WScript.Shell
+            foreach ($place in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
+                if (-not $place) { continue }
+                $link = $shell.CreateShortcut((Join-Path $place 'Toolwrite.lnk'))
+                $link.TargetPath = $exe
+                $link.Arguments = '--window'
+                $link.WorkingDirectory = $projects
+                $link.Description = 'Toolwrite: describe it, and it builds it'
+                $link.IconLocation = if (Test-Path $iconFile) { "$iconFile,0" } else { "$exe,0" }
+                $link.Save()
+                $shortcuts += $place
+            }
+        } catch {
+            Write-Host "  (could not add the Toolwrite icon: $($_.Exception.Message))" -ForegroundColor Yellow
+        }
+    }
+
     Write-Host ""
     Write-Host '  _____ ___   ___  _     __        ______  ___ _____ _____ ' -ForegroundColor Green
     Write-Host ' |_   _/ _ \ / _ \| |    \ \      / /  _ \|_ _|_   _| ____|' -ForegroundColor Green
@@ -111,11 +145,20 @@
     Write-Host ""
     Write-Host "Installed $version to $installDir"
     Write-Host ""
-    Write-Host 'Next, in a new PowerShell window:'
-    Write-Host '  toolwrite login                              sign in to Toolwrite Cloud (once)'
-    Write-Host '  toolwrite "Create a landing page for a bakery"'
-    Write-Host ""
-    Write-Host 'Always start with the word toolwrite, then say what you want.'
-    Write-Host 'Or type toolwrite on its own to open the Toolwrite shell, and just describe it.'
-    Write-Host 'Projects go into the folder you are in, or into "Toolwrite projects" in your home folder.'
+    if ($shortcuts.Count -gt 0) {
+        Write-Host 'Next: double-click the Toolwrite tree on your Desktop (or find Toolwrite'
+        Write-Host 'in the Start menu) and type what you want, in your own words:'
+        Write-Host '  Build me a webpage for my bakery'
+        Write-Host 'The first time, it helps you sign in to Toolwrite Cloud.'
+        Write-Host ""
+        Write-Host 'In a terminal, start with the word toolwrite instead:'
+        Write-Host '  toolwrite Build me a webpage for my bakery'
+    } else {
+        Write-Host 'Next, in a new PowerShell window:'
+        Write-Host '  toolwrite login                              sign in to Toolwrite Cloud (once)'
+        Write-Host '  toolwrite Build me a webpage for my bakery'
+        Write-Host ""
+        Write-Host 'Start with the word toolwrite, then say what you want; or type toolwrite on'
+        Write-Host 'its own to open the Toolwrite shell, and just describe it.'
+    }
 }
