@@ -1,6 +1,6 @@
 # Privacy
 
-Toolwrite is a program on your computer. It has no Toolwrite server and no account, and it sends **no usage data, analytics, or telemetry** anywhere. The only data that leaves your computer is what a build or a question needs, sent to the AI model **you** choose.
+Toolwrite is a program on your computer. The program sends **no usage data, analytics, or telemetry** anywhere. With Toolwrite Cloud, its requests go through Toolwrite's server to the AI model; the Toolwrite Cloud account and the website are covered by the [Privacy Policy](https://toolwrite.dev/privacy). Otherwise, the only data that leaves your computer is what a build or a question needs, sent to the AI model **you** choose.
 
 ## What is sent to the AI model
 
@@ -11,16 +11,15 @@ When you build, change a project, or ask a question, Toolwrite sends the model:
 - with `--apply`: the **current contents of the files being changed** (a long file is shortened);
 - the **files Toolwrite has generated** for this request, so later files fit earlier ones;
 - the project's **contract and memory** (the stack and decisions recorded in `.toolwrite/memory/`);
-- for review, each **generated file** and Eunice's findings.
+- for checking, each **generated file** and the findings of earlier checks.
 
-Where it goes depends on the provider you chose:
+Where it goes:
 
-| Provider | Where the data goes |
+| When | Where the data goes |
 |---|---|
-| `local` with a model on your computer (for example `llama3:8b` in Ollama) | Nowhere: it stays on your computer. |
-| `local` with an Ollama **cloud** model (names ending in `-cloud`, such as `gpt-oss:120b-cloud`) | Ollama sends it to Ollama's servers. Ollama's privacy policy (on ollama.com) applies. |
-| `openai`, `anthropic`, `gemini` | To that company. Its privacy policy applies. |
-| `stub` (offline) | Nowhere. |
+| Signed in to Toolwrite Cloud | Through Toolwrite's server to the AI model services it uses. Prompts and replies are not stored; only the tokens each request used are counted. |
+| Offline (not signed in) | Nowhere: it stays on your computer. |
+| An AI service of your own, if you connect one | To that service, under its privacy policy. |
 
 ## What is never read or sent
 
@@ -42,7 +41,7 @@ When `--run-checks` runs generated code, environment variables whose names look 
 | Generated files | `output/` in the folder you ran Toolwrite in (or the project itself with `--apply`) |
 | Backups of replaced files, for `toolwrite undo` | `.toolwrite/backups/` in the project |
 | Project memory (stack, decisions, past runs) | `.toolwrite/memory/` in the project |
-| Your model choice from `toolwrite setup` | `%APPDATA%\toolwrite\config.toml` (Windows), `~/Library/Application Support/toolwrite/config.toml` (macOS), `~/.config/toolwrite/config.toml` (Linux) |
+| Your sign-in choice from `toolwrite login` | `%APPDATA%\toolwrite\config.toml` (Windows), `~/Library/Application Support/toolwrite/config.toml` (macOS), `~/.config/toolwrite/config.toml` (Linux) |
 | Installed packages reused by `--run-checks` | your temp folder, `toolwrite-run-cache` (the 8 most recent) |
 | Compiled Rust dependencies for checks | your temp folder, `toolwrite-cargo-target` |
 
@@ -52,7 +51,6 @@ Delete any of these whenever you like; Toolwrite recreates what it needs.
 
 Besides the model, Toolwrite connects only:
 
-- to Ollama on your computer (`127.0.0.1:11434`), to list its models in `toolwrite setup` and to check it is running;
 - with `--run-checks`: to the package registries your generated project uses (PyPI through pip, npm, crates.io through cargo), to install its dependencies;
 - to the app it just started, on your own computer, to check it answers.
 

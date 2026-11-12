@@ -1,6 +1,6 @@
 # Toolwrite installer for Windows.
 #
-#   irm https://<toolwrite-site>/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/MygreatTuesday/toolwrite-releases/main/install.ps1 | iex
 #
 # Downloads the newest Toolwrite release for Windows (x86-64), checks its
 # SHA-256 checksum, installs toolwrite.exe into your user folder (no
@@ -103,17 +103,19 @@
     Write-Host '   | || |_| | |_| | |___   \ V  V / |  _ < | |  | | | |___ ' -ForegroundColor Green
     Write-Host '   |_| \___/ \___/|_____|   \_/\_/  |_| \_\___| |_| |_____|' -ForegroundColor Green
     Write-Host ""
-    Write-Host '        /\        Treehouse plans. Betty and Eugenia build.' -ForegroundColor DarkGreen
-    Write-Host '       /  \       Eunice checks every file before you get it.' -ForegroundColor DarkGreen
+    Write-Host '        /\        Describe it. Toolwrite plans it and builds it,' -ForegroundColor DarkGreen
+    Write-Host '       /  \       and checks every file before you get it.' -ForegroundColor DarkGreen
     Write-Host '      /\  /\' -ForegroundColor DarkGreen
     Write-Host '     /  \/  \' -ForegroundColor DarkGreen
     Write-Host '        ||' -ForegroundColor DarkYellow
     Write-Host ""
     Write-Host "Installed $version to $installDir"
     Write-Host ""
-    Write-Host 'Next:'
-    Write-Host '  toolwrite setup          choose your AI model (once)'
+    Write-Host 'Next, in a new PowerShell window:'
+    Write-Host '  toolwrite login                              sign in to Toolwrite Cloud (once)'
     Write-Host '  toolwrite "Create a landing page for a bakery"'
     Write-Host ""
-    Write-Host 'New terminal windows find toolwrite automatically.'
+    Write-Host 'Always start with the word toolwrite, then say what you want.'
+    Write-Host 'Or type toolwrite on its own to open the Toolwrite shell, and just describe it.'
+    Write-Host 'Projects go into the folder you are in, or into "Toolwrite projects" in your home folder.'
 }

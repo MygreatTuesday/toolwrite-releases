@@ -1,7 +1,7 @@
 #!/bin/sh
 # Toolwrite installer for macOS and Linux.
 #
-#   curl -fsSL https://<toolwrite-site>/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/MygreatTuesday/toolwrite-releases/main/install.sh | sh
 #
 # Downloads the newest Toolwrite release for this system (Linux x86-64,
 # macOS Apple silicon or Intel), checks its SHA-256 checksum, and installs
@@ -85,8 +85,8 @@ cat <<'BANNER'
    | || |_| | |_| | |___   \ V  V / |  _ < | |  | | | |___
    |_| \___/ \___/|_____|   \_/\_/  |_| \_\___| |_| |_____|
 
-        /\        Treehouse plans. Betty and Eugenia build.
-       /  \       Eunice checks every file before you get it.
+        /\        Describe it. Toolwrite plans it and builds it,
+       /  \       and checks every file before you get it.
       /\  /\
      /  \/  \
         ||
@@ -104,6 +104,10 @@ case ":$PATH:" in
 esac
 
 echo ""
-echo "Next:"
-echo "  toolwrite setup          choose your AI model (once)"
+echo "Next, in a new terminal:"
+echo "  toolwrite login                              sign in to Toolwrite Cloud (once)"
 echo "  toolwrite \"Create a landing page for a bakery\""
+echo ""
+echo "Always start with the word toolwrite, then say what you want."
+echo "Or type toolwrite on its own to open the Toolwrite shell, and just describe it."
+echo "Projects go into the folder you are in, or into \"Toolwrite projects\" in your home folder."
