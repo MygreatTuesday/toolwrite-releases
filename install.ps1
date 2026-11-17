@@ -36,6 +36,29 @@
         throw $Message
     }
 
+    # An unsteady connection (or a brand-new Windows still fetching its
+    # security certificates) drops a request now and then: try each one three
+    # times, with a short pause, before giving up; the last error says why.
+    function Get-WithRetry([string]$Url, [string]$OutFile) {
+        $reason = ''
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            try {
+                if ($OutFile) {
+                    Invoke-WebRequest -UseBasicParsing $Url -OutFile $OutFile -ErrorAction Stop
+                    return
+                }
+                return Invoke-RestMethod -UseBasicParsing $Url -ErrorAction Stop
+            } catch {
+                $reason = $_.Exception.Message
+                if ($attempt -lt 3) {
+                    Write-Host "  the connection dropped; trying again ($($attempt + 1) of 3)"
+                    Start-Sleep -Seconds (3 * $attempt)
+                }
+            }
+        }
+        throw $reason
+    }
+
     if (-not [Environment]::Is64BitOperatingSystem) {
         Fail 'Toolwrite needs 64-bit Windows.'
     }
@@ -46,10 +69,10 @@
     } else {
         try {
             # Not /releases/latest: GitHub leaves pre-releases (betas) out of it.
-            $releases = @(Invoke-RestMethod -UseBasicParsing "https://api.github.com/repos/$repo/releases?per_page=1")
+            $releases = @(Get-WithRetry "https://api.github.com/repos/$repo/releases?per_page=1" '')
             $tag = $releases[0].tag_name
         } catch {
-            Fail "could not find the newest release at github.com/$repo (check the internet connection)."
+            Fail "could not find the newest release at github.com/$repo (check the internet connection): $($_.Exception.Message)"
         }
         if (-not $tag) {
             Fail "github.com/$repo has no release yet."
@@ -64,12 +87,12 @@
         $zip = Join-Path $temp "$name.zip"
         Write-Host "  downloading $name.zip"
         try {
-            Invoke-WebRequest -UseBasicParsing "$base/$name.zip" -OutFile $zip
+            Get-WithRetry "$base/$name.zip" $zip
             # Saved and read as text: servers (GitHub too) send .sha256 as a
             # binary file, which Invoke-WebRequest would return as bytes.
-            Invoke-WebRequest -UseBasicParsing "$base/$name.zip.sha256" -OutFile "$zip.sha256"
+            Get-WithRetry "$base/$name.zip.sha256" "$zip.sha256"
         } catch {
-            Fail "could not download $name.zip from $base."
+            Fail "could not download $name.zip from $base (check the internet connection): $($_.Exception.Message)"
         }
         $expected = ((Get-Content -Raw "$zip.sha256") -split '\s+')[0].Trim().ToLowerInvariant()
 
